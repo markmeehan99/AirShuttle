@@ -1,0 +1,13 @@
+#ignora pastas com executaveis, dependendo se corres em modo Debug ou Release
+Debug/
+Release/
+
+#cenas do projeto, nao deve ser preciso
+.settings/
+*.cproject
+*.project
+
+#cenas do graphviewer
+*.jar
+
+
