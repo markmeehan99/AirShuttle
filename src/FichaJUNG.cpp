@@ -18,7 +18,7 @@ void exercicio1()
 
 	gv->addNode(0);
 	gv->addNode(1);
-	gv->addEdge(10,1,0,EdgeType::UNDIRECTED);
+	gv->addEdge(10,1,0,EdgeType::DIRECTED);
 	gv->rearrange();
 }
 
