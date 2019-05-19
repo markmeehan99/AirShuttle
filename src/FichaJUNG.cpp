@@ -11,14 +11,16 @@ void exercicio3();
 
 void exercicio1()
 {
-	GraphViewer *gv = new GraphViewer(600, 600, true);
+	GraphViewer *gv = new GraphViewer(50, 50, false);
 	gv->createWindow(600,600);
 	gv->defineVertexColor("blue");
 	gv->defineEdgeColor("black");
 
-	gv->addNode(0);
-	gv->addNode(1);
-	gv->addEdge(10,1,0,EdgeType::UNDIRECTED);
+	gv->addNode(0, 0, 0);
+	gv->addNode(1, 1, 1);
+	gv->addNode(2, 2, 2);
+	gv->addNode(3, 3, 3);
+	gv->addEdge(0, 0, 1, 1);
 	gv->rearrange();
 }
 
