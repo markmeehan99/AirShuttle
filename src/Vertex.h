@@ -16,7 +16,9 @@ using namespace std;
 /************************* Vertex  **************************/
 
 class Vertex {
-	int info;                // contents
+	int info;   // contents
+	int x;
+	int y;
 	vector<Edge> adj;  // outgoing edges
 	bool visited;          // auxiliary field
 	double dist = 0;
@@ -28,6 +30,7 @@ class Vertex {
 
 public:
 	Vertex(int in);
+	Vertex(int in, int x, int y);
 	bool operator<(Vertex & vertex) const; // // required by MutablePriorityQueue
 	int getInfo() const;
 	double getDist() const;
@@ -43,6 +46,11 @@ Vertex::Vertex(int in): info(in) {}
  * Auxiliary function to add an outgoing edge to a vertex (this),
  * with a given destination vertex (d) and edge weight (w).
  */
+
+
+
+Vertex::Vertex(int in, int x, int y): info(in), x(x), y(y){}
+
 
 void Vertex::addEdge(Vertex *d, double w) {
 	adj.push_back(Edge(d, w));

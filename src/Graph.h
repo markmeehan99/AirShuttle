@@ -17,8 +17,10 @@ class Graph {
 	vector<Vertex *> vertexSet;    // vertex set
 
 public:
+	Graph();
 	Vertex *findVertex(const int &in) const;
 	bool addVertex(const int &in);
+	bool addVertex(const int &in, int x, int y);
 	bool addEdge(const int &sourc, const int &dest, double w);
 	int getNumVertex() const;
 	vector<Vertex *> getVertexSet() const;
@@ -35,6 +37,10 @@ public:
 	vector<int> getfloydWarshallPath(const int &origin, const int &dest) const;
 
 };
+
+Graph::Graph() {
+	this->vertexSet = {};
+}
 
 
 int Graph::getNumVertex() const {
@@ -66,6 +72,13 @@ bool Graph::addVertex(const int &in) {
 	if ( findVertex(in) != NULL)
 		return false;
 	vertexSet.push_back(new Vertex(in));
+	return true;
+}
+
+bool Graph::addVertex(const int &in, int x, int y) {
+	if ( findVertex(in) != NULL)
+		return false;
+	vertexSet.push_back(new Vertex(in, x, y));
 	return true;
 }
 

@@ -3,6 +3,7 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include "Graph.h"
 
 void exercicio1();
 void exercicio2();
@@ -33,23 +34,30 @@ void exercicio3()
 
 }
 
-void importTest() {
+void importTest(Graph *graph) {
 	ifstream file;
-	file.open("nos.txt");
+	file.open("T06_nodes_X_Y_Maia.txt");
+
 	if(!file.is_open()) {
 		cout << "nos.txt nao abriu\n";
 		return;
 	}
-	else cout << "nos.txt abriu\n";
 
-	// first line needs to be read
 
 	// (id, x, y) -> line
+	// first line needs to be read
 	string line;
+	int counter = 1;
+	int id, x, y;
+	char garbageChar;
+
+	getline(file, line); //Gets number os nodes, discards it
+
+	int startingX, startingY;
+
 	while(getline(file, line)) {
 		istringstream ss(line);
-		int id, x, y;
-		char garbageChar;
+
 		ss >> garbageChar; 	// '('
 		ss >> id; 			// id
 		ss >> garbageChar;	// ','
@@ -57,7 +65,15 @@ void importTest() {
 		ss >> garbageChar;	// ','
 		ss >> y;			// y
 
-		//graph.addNode(new Node(id, x, y);
+		if (counter == 1) {
+			startingX = x;
+			startingY = y;
+		}
+
+		if (!graph->addVertex(id, x - startingX, y - startingY)) cout << "Could not add Vertex\n";
+		else cout << "Added vertex " << counter << endl;
+
+		counter ++;
 	}
 
 	file.close();
@@ -73,7 +89,6 @@ void importTest() {
 	// first line needs to be read
 
 	// (srcNode, destNode) -> line
-	string line;
 	while(getline(file, line)) {
 		istringstream ss(line);
 		int idSrc, idDest;
@@ -94,11 +109,20 @@ void importTest() {
 }
 
 int main() {
-	exercicio1();
-	//exercicio2();
-	//exercicio3();
 
-	//importTest();
+	GraphViewer *gv = new GraphViewer(50, 50, true);
+	gv->createWindow(600, 600);
+
+	Graph *graph = new Graph();
+
+	importTest(graph);
+
+	for (auto v: graph->getVertexSet()) {
+		gv->addNode(v->getInfo());
+	}
+
+	gv->rearrange();
+
 	getchar();
 	return 0;
 }
