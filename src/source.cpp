@@ -77,7 +77,7 @@ void importTest(Graph *graph) {
 		}
 
 		if (!graph->addVertex(id, x - startingX, y - startingY)) cout << "Could not add Vertex\n";
-		else cout << "Added vertex " << counter << endl;
+		//else cout << "Added vertex " << counter << endl;
 
 		counter ++;
 	}
@@ -119,6 +119,8 @@ int main() {
 	GraphViewer *gv = new GraphViewer(50, 50, false);
 
 	Graph *graph = new Graph();
+	gv->createWindow(600, 600);
+
 	int edgeCounter = 0;
 
 	importTest(graph);
@@ -129,13 +131,11 @@ int main() {
 
 		for (auto e: v->getAdj()) {
 			gv->addEdge(edgeCounter, v->getInfo(), e.getDest()->getInfo(), 0);
-			gv->setEdgeLabel(edgeCounter, "");
 			edgeCounter++;
-			cout << "Added edge " << edgeCounter << endl;
+			//cout << "Added edge " << edgeCounter << endl;
 		}
 	}
 
-	gv->createWindow(600, 600);
 	gv->rearrange();
 
 	getchar();

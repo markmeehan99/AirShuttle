@@ -19,6 +19,8 @@ class Vertex {
 	int info;   // contents
 	int x;
 	int y;
+	bool isAirport;
+	bool isHotel;
 	vector<Edge> adj;  // outgoing edges
 	bool visited;          // auxiliary field
 	double dist = 0;
@@ -34,6 +36,8 @@ public:
 	vector<Edge> getAdj();
 	int getX();
 	int getY();
+	bool getIsAirport();
+	bool getIsHotel();
 	bool operator<(Vertex & vertex) const; // // required by MutablePriorityQueue
 	int getInfo() const;
 	double getDist() const;
@@ -51,13 +55,16 @@ Vertex::Vertex(int in): info(in) {}
  */
 
 
-
 Vertex::Vertex(int in, int x, int y): info(in), x(x), y(y){}
 
 
 int Vertex::getX() { return this->x; }
 
 int Vertex::getY() { return this->y; }
+
+bool Vertex::getIsAirport() { return this->isAirport; }
+
+bool Vertex::getIsHotel() { return this->isHotel; }
 
 vector<Edge> Vertex::getAdj() { return this->adj; }
 
