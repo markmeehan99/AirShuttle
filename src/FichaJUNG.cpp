@@ -9,6 +9,11 @@ void exercicio1();
 void exercicio2();
 void exercicio3();
 
+#define PORTO_NODES "T06_nodes_X_Y_Porto.txt"
+#define MAIA_NODES "T06_nodes_X_Y_Maia.txt"
+#define PORTO_EDGES "T06_edges_Porto.txt"
+#define MAIA_EDGES "T06_edges_Maia.txt"
+
 
 void exercicio1()
 {
@@ -36,7 +41,7 @@ void exercicio3()
 
 void importTest(Graph *graph) {
 	ifstream file;
-	file.open("T06_nodes_X_Y_Maia.txt");
+	file.open(PORTO_NODES);
 
 	if(!file.is_open()) {
 		cout << "nos.txt nao abriu\n";
@@ -48,7 +53,8 @@ void importTest(Graph *graph) {
 	// first line needs to be read
 	string line;
 	int counter = 1;
-	int id, x, y;
+	int id;
+	double x, y;
 	char garbageChar;
 
 	getline(file, line); //Gets number os nodes, discards it
@@ -78,15 +84,15 @@ void importTest(Graph *graph) {
 
 	file.close();
 
-	file.open("arestas.txt");
+	file.open(PORTO_EDGES);
 
 	if(!file.is_open()) {
 		cout << "arestas.txt nao abriu\n";
 		return;
 	}
-	else cout << "arestas.txt abriu\n";
 
 	// first line needs to be read
+	getline(file, line);
 
 	// (srcNode, destNode) -> line
 	while(getline(file, line)) {
@@ -98,29 +104,38 @@ void importTest(Graph *graph) {
 		ss >> garbageChar;	// ','
 		ss >> idDest;		// dest
 
-		// Node src = graph.find(idSrc);
-		// Node dest = graph.find(idDest);
+		Vertex *src = graph->findVertex(idSrc);
+		Vertex *dest = graph->findVertex(idDest);
 
-		// Edge *edge = new Edge(src, dest);
-		// src.addEdge(*edge);
-		// graph.addEdge(*edge);
+		Edge *edge = new Edge(dest, 0);
+		graph->addEdge(src->getInfo(), dest->getInfo(), 0);
+
 	}
 	file.close();
 }
 
 int main() {
 
-	GraphViewer *gv = new GraphViewer(50, 50, true);
-	gv->createWindow(600, 600);
+	GraphViewer *gv = new GraphViewer(50, 50, false);
 
 	Graph *graph = new Graph();
+	int edgeCounter = 0;
 
 	importTest(graph);
 
 	for (auto v: graph->getVertexSet()) {
-		gv->addNode(v->getInfo());
+		gv->addNode(v->getInfo(), v->getX(), v->getY());
+		gv->setVertexLabel(v->getInfo(), "");
+
+		for (auto e: v->getAdj()) {
+			gv->addEdge(edgeCounter, v->getInfo(), e.getDest()->getInfo(), 0);
+			gv->setEdgeLabel(edgeCounter, "");
+			edgeCounter++;
+			cout << "Added edge " << edgeCounter << endl;
+		}
 	}
 
+	gv->createWindow(600, 600);
 	gv->rearrange();
 
 	getchar();

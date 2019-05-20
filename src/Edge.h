@@ -22,8 +22,11 @@ public:
 	Edge(Vertex *d, double w);
 	friend class Graph;
 	friend class Vertex;
+	Vertex *getDest();
 };
 
 
 Edge::Edge(Vertex *d, double w): dest(d), weight(w) {}
+
+Vertex *Edge::getDest() { return this->dest; }
 

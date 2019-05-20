@@ -31,6 +31,9 @@ class Vertex {
 public:
 	Vertex(int in);
 	Vertex(int in, int x, int y);
+	vector<Edge> getAdj();
+	int getX();
+	int getY();
 	bool operator<(Vertex & vertex) const; // // required by MutablePriorityQueue
 	int getInfo() const;
 	double getDist() const;
@@ -50,6 +53,13 @@ Vertex::Vertex(int in): info(in) {}
 
 
 Vertex::Vertex(int in, int x, int y): info(in), x(x), y(y){}
+
+
+int Vertex::getX() { return this->x; }
+
+int Vertex::getY() { return this->y; }
+
+vector<Edge> Vertex::getAdj() { return this->adj; }
 
 
 void Vertex::addEdge(Vertex *d, double w) {
