@@ -7,6 +7,7 @@
 #include <cmath>
 #include "MutablePriorityQueue.h"
 #include "Vertex.h"
+#include "graphviewer.h"
 
 using namespace std;
 
@@ -17,6 +18,7 @@ class Graph {
 	vector<Vertex *> vertexSet;    // vertex set
 
 public:
+	GraphViewer *gv;
 	Graph();
 	Vertex *findVertex(const int &in) const;
 	bool addVertex(const int &in);
@@ -40,6 +42,8 @@ public:
 
 Graph::Graph() {
 	this->vertexSet = {};
+	gv = new GraphViewer(50, 50, false);
+	gv->createWindow(600, 600);
 }
 
 

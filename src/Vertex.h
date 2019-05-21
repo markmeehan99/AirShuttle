@@ -38,6 +38,8 @@ public:
 	int getY();
 	bool getIsAirport();
 	bool getIsHotel();
+	void setIsAirport();
+	void setIsHotel();
 	bool operator<(Vertex & vertex) const; // // required by MutablePriorityQueue
 	int getInfo() const;
 	double getDist() const;
@@ -47,7 +49,7 @@ public:
 };
 
 
-Vertex::Vertex(int in): info(in) {}
+Vertex::Vertex(int in): info(in), isHotel(false), isAirport(false) {}
 
 /*
  * Auxiliary function to add an outgoing edge to a vertex (this),
@@ -55,7 +57,7 @@ Vertex::Vertex(int in): info(in) {}
  */
 
 
-Vertex::Vertex(int in, int x, int y): info(in), x(x), y(y){}
+Vertex::Vertex(int in, int x, int y): info(in), x(x), y(y), isHotel(false), isAirport(false){}
 
 
 int Vertex::getX() { return this->x; }
@@ -65,6 +67,14 @@ int Vertex::getY() { return this->y; }
 bool Vertex::getIsAirport() { return this->isAirport; }
 
 bool Vertex::getIsHotel() { return this->isHotel; }
+
+void Vertex::setIsAirport() {
+	this->isAirport = true;
+}
+
+void Vertex::setIsHotel() {
+	this->isHotel = true;
+}
 
 vector<Edge> Vertex::getAdj() { return this->adj; }
 

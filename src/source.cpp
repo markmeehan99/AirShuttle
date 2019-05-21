@@ -19,9 +19,18 @@ void exercicio3();
 
 map<string,int> hotels;
 
+struct struct_loaded {
+	bool mapPorto = false;
+	bool mapMaia = false;
+	bool hotelsPorto = false;
+	bool hotelsMaia = false;
+} loaded;
+
+enum cityOptions{ PORTO, MAIA };
+
 void displayHotels() {
 	for(auto h: hotels) {
-		cout << "|" << h.first << "|"<< h.second << "|" << endl;
+		cout << h.first << " -> "<< h.second << endl;
 	}
 }
 
@@ -59,6 +68,8 @@ void loadHotels(string city) {
 
 			hotels.insert(pair<string, int>(hotelName, id));
 		}
+
+		loaded.hotelsPorto = true;
 	}
 	else if (city == "Maia") {
 		file.open(MAIA_HOTELS);
@@ -88,16 +99,26 @@ void loadHotels(string city) {
 
 			hotels.insert(pair<string, int>(hotelName, id));
 		}
+
+		loaded.hotelsMaia = true;
 	}
 }
 
 
-void loadMap(Graph *graph) {
+void loadMap(Graph *graph, string city) {
 	ifstream file;
-	file.open(PORTO_NODES);
+
+	if (city == "Porto")
+		file.open(PORTO_NODES);
+	else if (city == "Maia")
+		file.open(MAIA_NODES);
+	else {
+		cout << "We do not operate in that city.\n";
+		return;
+	}
 
 	if(!file.is_open()) {
-		cout << "nos.txt nao abriu\n";
+		cout << city << " node file did not open\n";
 		return;
 	}
 
@@ -136,10 +157,17 @@ void loadMap(Graph *graph) {
 
 	file.close();
 
-	file.open(PORTO_EDGES);
+	if (city == "Porto")
+		file.open(PORTO_EDGES);
+	else if (city == "Maia")
+		file.open(MAIA_EDGES);
+	else {
+		cout << "We do not operate in that city.\n";
+		return;
+	}
 
 	if(!file.is_open()) {
-		cout << "arestas.txt nao abriu\n";
+		cout << city << " edge file did not open\n";
 		return;
 	}
 
@@ -164,6 +192,8 @@ void loadMap(Graph *graph) {
 
 	}
 	file.close();
+
+	loaded.mapPorto = true;
 }
 
 void displayMap(Graph *graph, GraphViewer *gv) {
@@ -178,6 +208,7 @@ void displayMap(Graph *graph, GraphViewer *gv) {
 		for (auto e: v->getAdj()) {
 			gv->addEdge(edgeCounter, v->getInfo(), e.getDest()->getInfo(), 0);
 			edgeCounter++;
+			//cout << "Added edge " << edgeCounter << endl;
 		}
 	}
 
@@ -188,13 +219,21 @@ void displayMap(Graph *graph, GraphViewer *gv) {
 	}
 
 	gv->rearrange();
+}
+
+void mainMenu() {
+	cout << "*******************************************************************" << endl;
+	cout << "Welcome to AirShuttle! Please select the city you wish to travel to" << endl;
+	cout << "1 - Porto" << endl;
+	cout << "2 - Maia" << endl;
+
 
 }
 
 
-int mainMenu() {
+int menu() {
 	cout << "*************************************************" << endl;
-	cout << "Welcome to AirShuttle! What would you like to do" << endl;
+	cout << "What would you like to do" << endl;
 	cout << "1 - View Map" << endl;
 	cout << "2 - View Hotels" << endl;
 	cout << "3 - Exit" << endl;
@@ -210,21 +249,18 @@ int mainMenu() {
 
 int main() {
 
-	bool quit = false;
-
-	GraphViewer *gv = new GraphViewer(50, 50, false);
-
 	Graph *graph = new Graph();
-	gv->createWindow(600, 600);
+
+	bool quit = false;
 
 	string city = "Porto";
 
 	while(!quit) {
-		switch (mainMenu()) {
+		switch (menu()) {
 		case 1:
 			loadHotels(city);
-			loadMap(graph);
-			displayMap(graph, gv);
+			loadMap(graph, city);
+			displayMap(graph, graph->gv);
 			break;
 		case 2:
 			displayHotels();
@@ -237,7 +273,7 @@ int main() {
 		}
 	}
 
-	gv->closeWindow();
+	graph->gv->closeWindow();
 	return 0;
 }
 
