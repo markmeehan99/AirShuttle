@@ -4,6 +4,7 @@
 #include <iostream>
 #include <sstream>
 #include "Graph.h"
+#include <map>
 
 void exercicio1();
 void exercicio2();
@@ -13,33 +14,85 @@ void exercicio3();
 #define MAIA_NODES "T06_nodes_X_Y_Maia.txt"
 #define PORTO_EDGES "T06_edges_Porto.txt"
 #define MAIA_EDGES "T06_edges_Maia.txt"
+#define PORTO_HOTELS "T06_hotels_Porto.txt"
+#define MAIA_HOTELS "T06_hotels_Maia.txt"
 
+map<string,int> hotels;
 
-void exercicio1()
-{
-	GraphViewer *gv = new GraphViewer(10, 10, true);
-	gv->createWindow(600,600);
-	gv->defineVertexColor("blue");
-	gv->defineEdgeColor("black");
-
-
-	gv->addNode(0);
-	gv->addNode(1);
-	gv->addEdge(101, 0, 1, EdgeType::UNDIRECTED);
-	gv->rearrange();
+void displayHotels() {
+	for(auto h: hotels) {
+		cout << "|" << h.first << "|"<< h.second << "|" << endl;
+	}
 }
 
-void exercicio2()
-{
+void loadHotels(string city) {
+	ifstream file;
+	string line;
+	string hotelName;
+	int id;
+	char garbageChar;
 
+	if (city == "Porto") {
+		file.open(PORTO_HOTELS);
+
+		if(!file.is_open()) {
+			cout << "Porto hotels file did not open.\n";
+			return;
+		}
+
+		cout << "Loading hotels...\n";
+
+		while(getline(file, line)) {
+			istringstream ss(line);
+			string token;
+
+			int pos = line.find(',');
+
+			line.substr(1);
+			line.replace(0,1,"");
+
+			hotelName = line.substr(0, pos-1); //hotelName
+
+		    line.erase(0, pos + 1);
+		    id = stoi(line.substr(0, pos)); //id
+
+
+			hotels.insert(pair<string, int>(hotelName, id));
+		}
+	}
+	else if (city == "Maia") {
+		file.open(MAIA_HOTELS);
+
+		if(!file.is_open()) {
+			cout << "Maia hotels file did not open.\n";
+			return;
+		}
+
+		cout << "Loading hotels...\n";
+
+		while(getline(file, line)) {
+
+			istringstream ss(line);
+			string token;
+
+			int pos = line.find(',');
+
+			line.substr(1);
+			line.replace(0,1,"");
+
+			hotelName = line.substr(0, pos-1); //hotelName
+
+		    line.erase(0, pos + 1);
+		    id = stoi(line.substr(0, pos)); //id
+
+
+			hotels.insert(pair<string, int>(hotelName, id));
+		}
+	}
 }
 
-void exercicio3()
-{
 
-}
-
-void importTest(Graph *graph) {
+void loadMap(Graph *graph) {
 	ifstream file;
 	file.open(PORTO_NODES);
 
@@ -48,8 +101,6 @@ void importTest(Graph *graph) {
 		return;
 	}
 
-
-	// (id, x, y) -> line
 	// first line needs to be read
 	string line;
 	int counter = 1;
@@ -60,6 +111,8 @@ void importTest(Graph *graph) {
 	getline(file, line); //Gets number os nodes, discards it
 
 	int startingX, startingY;
+
+	cout << "Loading map...\n";
 
 	while(getline(file, line)) {
 		istringstream ss(line);
@@ -77,7 +130,6 @@ void importTest(Graph *graph) {
 		}
 
 		if (!graph->addVertex(id, x - startingX, y - startingY)) cout << "Could not add Vertex\n";
-		//else cout << "Added vertex " << counter << endl;
 
 		counter ++;
 	}
@@ -114,30 +166,79 @@ void importTest(Graph *graph) {
 	file.close();
 }
 
+void displayMap(Graph *graph, GraphViewer *gv) {
+
+	int edgeCounter = 0;
+
+	for (auto v: graph->getVertexSet()) {
+		gv->addNode(v->getInfo(), v->getX(), v->getY());
+		gv->setVertexLabel(v->getInfo(), ".");
+		//gv->rearrange();
+
+		for (auto e: v->getAdj()) {
+			gv->addEdge(edgeCounter, v->getInfo(), e.getDest()->getInfo(), 0);
+			edgeCounter++;
+		}
+	}
+
+	for (auto h: hotels) {
+		gv->setVertexColor(h.second, "RED");
+		gv->setVertexLabel(h.second, h.first);
+		gv->rearrange();
+	}
+
+	gv->rearrange();
+
+}
+
+
+int mainMenu() {
+	cout << "*************************************************" << endl;
+	cout << "Welcome to AirShuttle! What would you like to do" << endl;
+	cout << "1 - View Map" << endl;
+	cout << "2 - View Hotels" << endl;
+	cout << "3 - Exit" << endl;
+	cout << "*************************************************" << endl;
+
+	int option;
+
+	cin >> option;
+
+	return option;
+}
+
+
 int main() {
+
+	bool quit = false;
 
 	GraphViewer *gv = new GraphViewer(50, 50, false);
 
 	Graph *graph = new Graph();
 	gv->createWindow(600, 600);
 
-	int edgeCounter = 0;
+	string city = "Porto";
 
-	importTest(graph);
-
-	for (auto v: graph->getVertexSet()) {
-		gv->addNode(v->getInfo(), v->getX(), v->getY());
-		gv->setVertexLabel(v->getInfo(), "");
-
-		for (auto e: v->getAdj()) {
-			gv->addEdge(edgeCounter, v->getInfo(), e.getDest()->getInfo(), 0);
-			edgeCounter++;
-			//cout << "Added edge " << edgeCounter << endl;
+	while(!quit) {
+		switch (mainMenu()) {
+		case 1:
+			loadHotels(city);
+			loadMap(graph);
+			displayMap(graph, gv);
+			break;
+		case 2:
+			displayHotels();
+			break;
+		case 3:
+			quit = true;
+			break;
+		default:
+			break;
 		}
 	}
 
-	gv->rearrange();
-
-	getchar();
+	gv->closeWindow();
 	return 0;
 }
+
+
