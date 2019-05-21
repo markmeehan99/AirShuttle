@@ -5,6 +5,8 @@
 #include <sstream>
 #include "Graph.h"
 #include <map>
+#include <cmath>
+
 
 void exercicio1();
 void exercicio2();
@@ -18,6 +20,7 @@ void exercicio3();
 #define MAIA_HOTELS "T06_hotels_Maia.txt"
 
 map<string,int> hotels;
+string city;
 
 struct struct_loaded {
 	bool mapPorto = false;
@@ -187,10 +190,15 @@ void loadMap(Graph *graph, string city) {
 		Vertex *src = graph->findVertex(idSrc);
 		Vertex *dest = graph->findVertex(idDest);
 
-		Edge *edge = new Edge(dest, 0);
-		graph->addEdge(src->getInfo(), dest->getInfo(), 0);
+		double weight = (double)sqrt(
+										(double) pow(src->getX() - dest->getX(),2) +
+										(double) pow(src->getY() - dest->getY(),2)
+									);
 
+		Edge *edge = new Edge(dest, weight);
+		graph->addEdge(src->getInfo(), dest->getInfo(), 0);
 	}
+
 	file.close();
 
 	loaded.mapPorto = true;
@@ -218,6 +226,17 @@ void displayMap(Graph *graph, GraphViewer *gv) {
 		gv->rearrange();
 	}
 
+	//Calcular shortestPath entre Ibis e StarInn
+
+	graph->dijkstraShortestPath(474789325, 111447974);
+	vector<int> path = graph->getPath(474789325, 111447974);
+
+	cout <<	path.size()	<< endl;
+
+	for (auto v: path) {
+		graph->gv->setVertexColor(v, "GREEN");
+	}
+
 	gv->rearrange();
 }
 
@@ -226,6 +245,8 @@ void mainMenu() {
 	cout << "Welcome to AirShuttle! Please select the city you wish to travel to" << endl;
 	cout << "1 - Porto" << endl;
 	cout << "2 - Maia" << endl;
+	cout << "-------------" << endl;
+	cout << "3 - Exit program" << endl;
 
 
 }

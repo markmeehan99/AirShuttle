@@ -17,8 +17,8 @@ using namespace std;
 
 class Vertex {
 	int info;   // contents
-	int x;
-	int y;
+	double x;
+	double y;
 	bool isAirport;
 	bool isHotel;
 	vector<Edge> adj;  // outgoing edges
@@ -34,8 +34,8 @@ public:
 	Vertex(int in);
 	Vertex(int in, int x, int y);
 	vector<Edge> getAdj();
-	int getX();
-	int getY();
+	double getX();
+	double getY();
 	bool getIsAirport();
 	bool getIsHotel();
 	void setIsAirport();
@@ -45,7 +45,7 @@ public:
 	double getDist() const;
 	Vertex *getPath() const;
 	friend class Graph;
-	friend class MutablePriorityQueue<Vertex>;
+	friend class MutablePriorityQueue;
 };
 
 
@@ -60,9 +60,9 @@ Vertex::Vertex(int in): info(in), isHotel(false), isAirport(false) {}
 Vertex::Vertex(int in, int x, int y): info(in), x(x), y(y), isHotel(false), isAirport(false){}
 
 
-int Vertex::getX() { return this->x; }
+double Vertex::getX() { return this->x; }
 
-int Vertex::getY() { return this->y; }
+double Vertex::getY() { return this->y; }
 
 bool Vertex::getIsAirport() { return this->isAirport; }
 

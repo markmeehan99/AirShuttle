@@ -5,6 +5,7 @@
 #include <list>
 #include <limits>
 #include <cmath>
+#include <algorithm>    // std::reverse
 #include "MutablePriorityQueue.h"
 #include "Vertex.h"
 #include "graphviewer.h"
@@ -27,8 +28,12 @@ public:
 	int getNumVertex() const;
 	vector<Vertex *> getVertexSet() const;
 
+	Vertex * initSingleSource(const int &origin);
+	bool relax(Vertex *v, Vertex *w, double weight);
+
+
 	// Fp05 - single source
-	void dijkstraShortestPath(const int &s);
+	void dijkstraShortestPath(int s, int d);
 	void dijkstraShortestPathOld(const int &s);
 	void unweightedShortestPath(const int &s);
 	void bellmanFordShortestPath(const int &s);
@@ -101,29 +106,102 @@ bool Graph::addEdge(const int &sourc, const int &dest, double w) {
 	return true;
 }
 
+Vertex * Graph::initSingleSource(const int &origin) {
+	for (auto v : vertexSet) {
+		v->dist = INF;
+		v->path = nullptr;
+	}
+	auto s = findVertex(origin);
+	s->dist = 0;
+	return s;
+}
+
+bool Graph::relax(Vertex *v, Vertex *w, double weight) {
+	if (v->dist + weight < w->dist) {
+		w->dist = v->dist + weight;
+		w->path = v;
+		return true;
+	}
+	else return false;
+}
+
 
 /**************** Single Source Shortest Path algorithms ************/
 
 
-void Graph::dijkstraShortestPath(const int &origin) {
-	// TODO
+void Graph::dijkstraShortestPath(int origin, int dest) {
+
+	auto startNode = initSingleSource(origin);
+	auto endNode = findVertex(dest);
+
+	MutablePriorityQueue q;
+	q.insert(startNode);
+
+	while ( ! q.empty() ) {
+		auto v = q.extractMin();
+
+		for (auto e : v->adj) {
+			auto oldDist = e.dest->dist;
+
+			if (v == endNode) {
+				cout << "Found destination!" << endl;
+				break;
+			}
+
+			if (relax(v, e.dest, e.weight)) {
+				if (oldDist == INF) {
+					q.insert(e.dest);
+				}
+				else {
+					q.decreaseKey(e.dest);
+				}
+			}
+		}
+	}
 }
 
 
 vector<int> Graph::getPath(const int &origin, const int &dest) const{
+
 	vector<int> res;
-	// TODO
+	auto v = findVertex(dest);
+	if (v == nullptr || v->dist == INF) // missing or disconnected
+	{
+		cout << "Nulo\n";
+		return res;
+	}
+	for ( ; v != nullptr; v = v->path)
+		res.push_back(v->info);
+	reverse(res.begin(), res.end());
 	return res;
+
 }
 
 
 void Graph::unweightedShortestPath(const int &orig) {
-	// TODO
+	auto s = initSingleSource(orig);
+	queue< Vertex* > q;
+	q.push(s);
+	while( ! q.empty() ) {
+		auto v = q.front();
+		q.pop();
+		for(auto e: v->adj)
+			if (relax(v, e.dest, 1))
+				q.push(e.dest);
+	}
 }
 
 
 void Graph::bellmanFordShortestPath(const int &orig) {
-	// TODO
+	initSingleSource(orig);
+	for (unsigned i = 1; i < vertexSet.size(); i++)
+		for (auto v: vertexSet)
+			for (auto e: v->adj)
+				relax(v, e.dest, e.weight);
+	for (auto v: vertexSet)
+		for (auto e: v->adj)
+			if (relax(v, e.dest, e.weight))
+				cout << "Negative cycle!" << endl;
 }
 
 

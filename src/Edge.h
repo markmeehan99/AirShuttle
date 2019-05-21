@@ -28,5 +28,6 @@ public:
 
 Edge::Edge(Vertex *d, double w): dest(d), weight(w) {}
 
+
 Vertex *Edge::getDest() { return this->dest; }
 
