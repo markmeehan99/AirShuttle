@@ -195,8 +195,9 @@ void loadMap(Graph *graph, string city) {
 										(double) pow(src->getY() - dest->getY(),2)
 									);
 
-		Edge *edge = new Edge(dest, weight);
-		graph->addEdge(src->getInfo(), dest->getInfo(), 0);
+		//Edge *edge1 = new Edge(dest, weight);
+		graph->addEdge(src->getInfo(), dest->getInfo(), weight);
+		graph->addEdge(dest->getInfo(), src->getInfo(), weight);
 	}
 
 	file.close();
