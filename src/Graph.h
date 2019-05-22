@@ -21,7 +21,7 @@ class Graph {
 public:
 	GraphViewer *gv;
 	Graph();
-	Vertex *findVertex(const int &in) const;
+	Vertex *findVertex(int in) const;
 	bool addVertex(const int &in);
 	bool addVertex(const int &in, int x, int y);
 	bool addEdge(const int &sourc, const int &dest, double w);
@@ -65,7 +65,7 @@ vector<Vertex *> Graph::getVertexSet() const {
  * Auxiliary function to find a vertex with a given content.
  */
 
-Vertex * Graph::findVertex(const int &in) const {
+Vertex * Graph::findVertex(int in) const {
 	for (auto v : vertexSet)
 		if (v->info == in)
 			return v;

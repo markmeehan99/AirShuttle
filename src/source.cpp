@@ -8,10 +8,6 @@
 #include <cmath>
 
 
-void exercicio1();
-void exercicio2();
-void exercicio3();
-
 #define PORTO_NODES "T06_nodes_X_Y_Porto.txt"
 #define MAIA_NODES "T06_nodes_X_Y_Maia.txt"
 #define PORTO_EDGES "T06_edges_Porto.txt"
@@ -20,7 +16,7 @@ void exercicio3();
 #define MAIA_HOTELS "T06_hotels_Maia.txt"
 
 map<string,int> hotels;
-string city;
+string city = "Porto";
 
 struct struct_loaded {
 	bool mapPorto = false;
@@ -31,13 +27,51 @@ struct struct_loaded {
 
 enum cityOptions{ PORTO, MAIA };
 
-void displayHotels() {
-	for(auto h: hotels) {
-		cout << h.first << " -> "<< h.second << endl;
+vector <int> requests;
+
+
+void displayRequests() {
+	for (auto r: requests) {
+		for (auto h: hotels) {
+			if (r == h.second)
+				cout << h.first << endl;
+		}
 	}
 }
 
-void loadHotels(string city) {
+int getHotelId(string hotel) {
+	for (auto h: hotels) {
+		if (h.first == hotel) return h.second;
+	}
+	return 0;
+}
+
+
+void planTrip(Graph *graph) {
+	Vertex *airport = graph->findVertex(299611392);
+	vector<double> distances;
+
+	for (auto h: requests) {
+		cout << requests.size() << endl;
+		cout << graph->getVertexSet().size() << endl;
+		cout << "Ready to calculate\n";
+		Vertex *dest = graph->findVertex(h);
+
+		cout << airport->getInfo() << endl;
+		cout << dest->getInfo() << endl;
+		graph->dijkstraShortestPath(airport->getInfo(), dest->getInfo());
+		distances.push_back(dest->getDist());
+		cout << "Calculated path to hotel " << h << endl;
+	}
+
+	for (int i=0; i < distances.size(); i++) {
+		cout << distances.at(i) << endl;
+	}
+}
+
+
+void loadHotels() {
+
 	ifstream file;
 	string line;
 	string hotelName;
@@ -45,6 +79,11 @@ void loadHotels(string city) {
 	char garbageChar;
 
 	if (city == "Porto") {
+
+		if (loaded.hotelsPorto) {
+			return;
+		}
+
 		file.open(PORTO_HOTELS);
 
 		if(!file.is_open()) {
@@ -75,6 +114,12 @@ void loadHotels(string city) {
 		loaded.hotelsPorto = true;
 	}
 	else if (city == "Maia") {
+
+		if (loaded.hotelsMaia) {
+			cout << "Maia hotels already loaded\n";
+			return;
+		}
+
 		file.open(MAIA_HOTELS);
 
 		if(!file.is_open()) {
@@ -99,12 +144,37 @@ void loadHotels(string city) {
 		    line.erase(0, pos + 1);
 		    id = stoi(line.substr(0, pos)); //id
 
-
 			hotels.insert(pair<string, int>(hotelName, id));
 		}
-
 		loaded.hotelsMaia = true;
 	}
+	else cout << "We dont seem to operate in that city\n";
+
+}
+
+void displayHotels() {
+	loadHotels();
+	loaded.hotelsPorto = true;
+	for(auto h: hotels) {
+		cout << h.first << " -> "<< h.second << endl;
+	}
+}
+
+void requestTrip() {
+	cout << "What hotel would you like to travel to?\n";
+	displayHotels();
+	string hotel;
+	int hotelId;
+
+	getchar(); //eats \n left by previous menu option
+	getline(cin, hotel);
+
+	if ((hotelId = getHotelId(hotel)) == 0) {
+		cout << "That hotel was not found!\n";
+		return;
+	}
+
+	requests.push_back(hotelId);
 }
 
 
@@ -229,16 +299,14 @@ void displayMap(Graph *graph, GraphViewer *gv) {
 
 	//Calcular shortestPath entre Ibis e StarInn
 
-	graph->dijkstraShortestPath(474789325, 111447974);
-	vector<int> path = graph->getPath(474789325, 111447974);
-
-	cout <<	path.size()	<< endl;
-
+	//graph->dijkstraShortestPath(474789325, 111447974);
+	//vector<int> path = graph->getPath(474789325, 111447974);
+/*
 	for (auto v: path) {
 		graph->gv->setVertexColor(v, "GREEN");
 	}
-
-	gv->rearrange();
+*/
+	//gv->rearrange();
 }
 
 void mainMenu() {
@@ -248,8 +316,6 @@ void mainMenu() {
 	cout << "2 - Maia" << endl;
 	cout << "-------------" << endl;
 	cout << "3 - Exit program" << endl;
-
-
 }
 
 
@@ -258,7 +324,10 @@ int menu() {
 	cout << "What would you like to do" << endl;
 	cout << "1 - View Map" << endl;
 	cout << "2 - View Hotels" << endl;
-	cout << "3 - Exit" << endl;
+	cout << "3 - Request Trip" << endl;
+	cout << "4 - View current requests" << endl;
+	cout << "5 - Plan trip with current requests" << endl;
+	cout << "6 - Exit" << endl;
 	cout << "*************************************************" << endl;
 
 	int option;
@@ -275,12 +344,11 @@ int main() {
 
 	bool quit = false;
 
-	string city = "Porto";
 
 	while(!quit) {
 		switch (menu()) {
 		case 1:
-			loadHotels(city);
+			loadHotels();
 			loadMap(graph, city);
 			displayMap(graph, graph->gv);
 			break;
@@ -288,6 +356,15 @@ int main() {
 			displayHotels();
 			break;
 		case 3:
+			requestTrip();
+			break;
+		case 4:
+			displayRequests();
+			break;
+		case 5:
+			planTrip(graph);
+			break;
+		case 6:
 			quit = true;
 			break;
 		default:
