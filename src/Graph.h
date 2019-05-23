@@ -49,6 +49,7 @@ Graph::Graph() {
 	this->vertexSet = {};
 	gv = new GraphViewer(50, 50, false);
 	gv->createWindow(600, 600);
+	gv->defineEdgeCurved(false);
 }
 
 

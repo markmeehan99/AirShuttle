@@ -17,6 +17,7 @@
 
 map<string,int> hotels;
 string city = "Porto";
+vector<int> paintGreen;
 
 struct struct_loaded {
 	bool mapPorto = false;
@@ -44,29 +45,6 @@ int getHotelId(string hotel) {
 		if (h.first == hotel) return h.second;
 	}
 	return 0;
-}
-
-
-void planTrip(Graph *graph) {
-	Vertex *airport = graph->findVertex(299611392);
-	vector<double> distances;
-
-	for (auto h: requests) {
-		cout << requests.size() << endl;
-		cout << graph->getVertexSet().size() << endl;
-		cout << "Ready to calculate\n";
-		Vertex *dest = graph->findVertex(h);
-
-		cout << airport->getInfo() << endl;
-		cout << dest->getInfo() << endl;
-		graph->dijkstraShortestPath(airport->getInfo(), dest->getInfo());
-		distances.push_back(dest->getDist());
-		cout << "Calculated path to hotel " << h << endl;
-	}
-
-	for (int i=0; i < distances.size(); i++) {
-		cout << distances.at(i) << endl;
-	}
 }
 
 
@@ -181,6 +159,8 @@ void requestTrip() {
 void loadMap(Graph *graph, string city) {
 	ifstream file;
 
+	if ((city == "Porto" && loaded.mapPorto) || ((city == "Maia" && loaded.mapMaia))) return;
+
 	if (city == "Porto")
 		file.open(PORTO_NODES);
 	else if (city == "Maia")
@@ -275,26 +255,33 @@ void loadMap(Graph *graph, string city) {
 	loaded.mapPorto = true;
 }
 
-void displayMap(Graph *graph, GraphViewer *gv) {
+void displayMap(Graph *graph) {
 
 	int edgeCounter = 0;
 
 	for (auto v: graph->getVertexSet()) {
-		gv->addNode(v->getInfo(), v->getX(), v->getY());
-		gv->setVertexLabel(v->getInfo(), ".");
+		graph->gv->addNode(v->getInfo(), v->getX(), v->getY());
+		graph->gv->setVertexLabel(v->getInfo(), ".");
 		//gv->rearrange();
 
 		for (auto e: v->getAdj()) {
-			gv->addEdge(edgeCounter, v->getInfo(), e.getDest()->getInfo(), 0);
+			graph->gv->addEdge(edgeCounter, v->getInfo(), e.getDest()->getInfo(), 0);
 			edgeCounter++;
 			//cout << "Added edge " << edgeCounter << endl;
 		}
 	}
 
 	for (auto h: hotels) {
-		gv->setVertexColor(h.second, "RED");
-		gv->setVertexLabel(h.second, h.first);
-		gv->rearrange();
+		graph->gv->setVertexColor(h.second, "RED");
+		graph->gv->setVertexLabel(h.second, h.first);
+		graph->gv->rearrange();
+	}
+
+	cout << "paintGreen size: " << paintGreen.size() << endl;
+
+	for (auto cenas: paintGreen) {
+		graph->gv->setVertexColor(cenas, "GREEN");
+		graph->gv->rearrange();
 	}
 
 	//Calcular shortestPath entre Ibis e StarInn
@@ -307,6 +294,65 @@ void displayMap(Graph *graph, GraphViewer *gv) {
 	}
 */
 	//gv->rearrange();
+}
+
+void planTrip(Graph *graph) {
+
+	loadMap(graph, city);
+
+	Vertex *airport = graph->findVertex(299611392);
+	if (airport == NULL) cout << "Could not find airport\n";
+
+	vector<double> distances;
+
+	pair<int, double> shortestPath = make_pair(0,INF);
+
+	for (auto h: requests) {
+		cout << "Ready to calculate\n";
+		Vertex *dest = graph->findVertex(h);
+		graph->dijkstraShortestPath(airport->getInfo(), dest->getInfo());
+		distances.push_back(dest->getDist());
+		cout << "Calculated path to hotel " << h << endl;
+		if(dest->getDist() < shortestPath.second) shortestPath = make_pair(dest->getInfo(),dest->getDist());
+	}
+
+	paintGreen = graph->getPath(299611392, shortestPath.first);
+
+	requests.erase(find(requests.begin(), requests.end(), shortestPath.first));
+
+	pair<int, double> shortestPath2 = make_pair(0,INF);
+
+	while(!requests.empty()) {
+		shortestPath2 = make_pair(0,INF);
+		for (auto h: requests) {
+
+			//cout << "Ready to calculate\n";
+			Vertex *dest = graph->findVertex(h);
+			graph->dijkstraShortestPath(shortestPath.first, dest->getInfo());
+			distances.push_back(dest->getDist());
+			//cout << "Calculated path to hotel " << h << endl;
+			if(dest->getDist() < shortestPath2.second) shortestPath2 = make_pair(dest->getInfo(),dest->getDist());
+
+			cout << shortestPath.first << " -> " << shortestPath2.first << endl;
+		}
+
+		for (auto i: graph->getPath(shortestPath.first, shortestPath2.first)) {
+			paintGreen.push_back(i);
+		}
+
+		requests.erase(find(requests.begin(), requests.end(), shortestPath2.first));
+
+		shortestPath = shortestPath2;
+	}
+
+
+
+/*
+	for (int i=0; i < distances.size(); i++) {
+		cout << "Distance to hotel " << i << ": " << distances.at(i) << endl;
+	}*/
+
+	displayMap(graph);
 }
 
 void mainMenu() {
@@ -350,7 +396,7 @@ int main() {
 		case 1:
 			loadHotels();
 			loadMap(graph, city);
-			displayMap(graph, graph->gv);
+			displayMap(graph);
 			break;
 		case 2:
 			displayHotels();
