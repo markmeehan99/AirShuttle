@@ -10,4 +10,6 @@ Release/
 #cenas do graphviewer
 *.jar
 
-
+.vscode/
+*.o
+*.d
