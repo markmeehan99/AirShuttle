@@ -2,8 +2,10 @@
 #include "graphviewer.h"
 #include <fstream>
 #include <iostream>
+#include <algorithm>    // std::sort
 #include <sstream>
 #include "Graph.h"
+#include "user.h"
 #include <map>
 #include <cmath>
 
@@ -17,6 +19,7 @@
 map<string, int> hotels;
 string city = "Porto";
 vector<int> paintGreen;
+vector<User*> usersRequested;
 
 struct struct_loaded
 {
@@ -36,13 +39,9 @@ vector<int> requests;
 
 void displayRequests()
 {
-	for (auto r : requests)
+	for (auto r : usersRequested)
 	{
-		for (auto h : hotels)
-		{
-			if (r == h.second)
-				cout << h.first << endl;
-		}
+		cout << r->getHotelId() << endl;
 	}
 }
 
@@ -63,7 +62,6 @@ void loadHotels()
 	string line;
 	string hotelName;
 	int id;
-	char garbageChar;
 
 	if (city == "Porto")
 	{
@@ -162,6 +160,7 @@ void requestTrip()
 	displayHotels();
 	string hotel;
 	int hotelId;
+	int hour, minutes;
 
 	getchar(); //eats \n left by previous menu option
 	getline(cin, hotel);
@@ -171,8 +170,11 @@ void requestTrip()
 		cout << "That hotel was not found!\n";
 		return;
 	}
+	cout << "What time would you like to leave the airport? [HH MM]\n";
+	cin >> hour >> minutes;
 
-	requests.push_back(hotelId);
+
+	usersRequested.push_back(new User(0, hour, minutes));
 }
 
 void loadMap(Graph *graph, string city)
@@ -329,8 +331,32 @@ void displayMap(Graph *graph)
 	//gv->rearrange();
 }
 
+bool func(User *u1, User *u2) {
+	return ((*u1) < (*u2));
+}
+
+vector<User*> choosePassangers() {
+	vector<User*> aux;
+
+	sort(usersRequested.begin(), usersRequested.end(), func);
+	for (int i=0; i < 2; i++) {
+		aux.push_back(usersRequested.at(i));
+	}
+
+	return aux;
+}
+
+User* findUser(int id, vector<User*> v) {
+	for(auto u: v) {
+		if(u->getHotelId() == id)
+			return u;
+	}
+	return NULL;
+}
+
 void planTrip(Graph *graph)
 {
+	vector<User*> aux = choosePassangers();
 
 	loadMap(graph, city);
 
@@ -348,20 +374,20 @@ void planTrip(Graph *graph)
 	// first source is airport
 	int src = airport->getInfo();
 
-	while (!requests.empty())
+	while (!aux.empty())
 	{
 		// first "found" destination has a distance of infinite
 		// int is the id, double is the distance
 		pair<int, double> auxDest = make_pair(0, INF);
 
-		for (auto h : requests)
+		for (auto h : aux)
 		{
 			cout << "ready to calculate\n";
-			Vertex *dest = graph->findVertex(h);
+			Vertex *dest = graph->findVertex(h->getHotelId());
 			//calculates dijkstra from src to h (one of the requests)
 			graph->dijkstraShortestPath(src, dest->getInfo());
 			distances.push_back(dest->getDist());
-			cout << "Calculated path to hotel " << h << endl;
+			cout << "Calculated path to hotel " << h->getHotelId() << endl;
 			if (dest->getDist() < auxDest.second)
 				auxDest = make_pair(dest->getInfo(), dest->getDist());
 		}
@@ -371,7 +397,7 @@ void planTrip(Graph *graph)
 		paintGreen.insert(paintGreen.end(), path.begin(), path.end());
 
 		// removing the destination found from the vector
-		requests.erase(find(requests.begin(), requests.end(), auxDest.first));
+		aux.erase(find(aux.begin(), aux.end(), findUser(auxDest.first, aux)));
 
 		// updating next src with this iterations' dest
 		src = auxDest.first;
@@ -382,49 +408,6 @@ void planTrip(Graph *graph)
 	vector<int> path = graph->getPath(src, airport->getInfo());
 	paintGreen.insert(paintGreen.begin(), path.begin(), path.end());
 
-	/*pair<int, double> shortestPath = make_pair(0,INF);
-
-	for (auto h: requests) {
-		cout << "Ready to calculate\n";
-		Vertex *dest = graph->findVertex(h);
-		graph->dijkstraShortestPath(airport->getInfo(), dest->getInfo());
-		distances.push_back(dest->getDist());
-		cout << "Calculated path to hotel " << h << endl;
-		if(dest->getDist() < shortestPath.second) shortestPath = make_pair(dest->getInfo(),dest->getDist());
-	}
-
-	paintGreen = graph->getPath(299611392, shortestPath.first);
-
-
-	pair<int, double> shortestPath2 = make_pair(0,INF);
-
-	while(!requests.empty()) {
-		shortestPath2 = make_pair(0,INF);
-		for (auto h: requests) {
-
-			//cout << "Ready to calculate\n";
-			Vertex *dest = graph->findVertex(h);
-			graph->dijkstraShortestPath(shortestPath.first, dest->getInfo());
-			distances.push_back(dest->getDist());
-			//cout << "Calculated path to hotel " << h << endl;
-			if(dest->getDist() < shortestPath2.second) shortestPath2 = make_pair(dest->getInfo(),dest->getDist());
-
-			cout << shortestPath.first << " -> " << shortestPath2.first << endl;
-		}
-
-		for (auto i: graph->getPath(shortestPath.first, shortestPath2.first)) {
-			paintGreen.push_back(i);
-		}
-
-		requests.erase(find(requests.begin(), requests.end(), shortestPath2.first));
-
-		shortestPath = shortestPath2;
-	}*/
-
-	/*
-	for (int i=0; i < distances.size(); i++) {
-		cout << "Distance to hotel " << i << ": " << distances.at(i) << endl;
-	}*/
 
 	displayMap(graph);
 }
