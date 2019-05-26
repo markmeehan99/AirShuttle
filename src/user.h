@@ -13,7 +13,7 @@ private:
 
 public:
 	User();
-	User(int id, int hour, int minutes);
+	User(int id, int hour, int minutes, int hotelId);
 	bool operator<(User u);
 	int getHotelId();
 };

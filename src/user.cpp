@@ -6,10 +6,11 @@ User::User() {
 	this->time.minutes = 0;
 }
 
-User::User(int id, int hour, int minutes) {
+User::User(int id, int hour, int minutes, int hotelId) {
 	this->userID = id;
 	this->time.hour = hour;
 	this->time.minutes = minutes;
+	this->hotelId = hotelId;
 }
 
 bool User::operator<(User u) {

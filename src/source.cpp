@@ -174,7 +174,7 @@ void requestTrip()
 	cin >> hour >> minutes;
 
 
-	usersRequested.push_back(new User(0, hour, minutes));
+	usersRequested.push_back(new User(0, hour, minutes, hotelId));
 }
 
 void loadMap(Graph *graph, string city)
@@ -335,15 +335,21 @@ bool func(User *u1, User *u2) {
 	return ((*u1) < (*u2));
 }
 
-vector<User*> choosePassangers() {
-	vector<User*> aux;
+bool choosePassangers(vector<User*> &users) {
+	int capacity = 2;
+
+	if(usersRequested.empty()) return false;
 
 	sort(usersRequested.begin(), usersRequested.end(), func);
-	for (int i=0; i < 2; i++) {
-		aux.push_back(usersRequested.at(i));
+	for (int i=0; i < capacity; i++) {
+		users.push_back(usersRequested.at(i));
 	}
 
-	return aux;
+	for(int i = 0; i < capacity; i++) {
+		usersRequested.erase(usersRequested.begin());
+	}
+
+	return true;
 }
 
 User* findUser(int id, vector<User*> v) {
@@ -351,12 +357,17 @@ User* findUser(int id, vector<User*> v) {
 		if(u->getHotelId() == id)
 			return u;
 	}
+	cout << "nulo\n";
 	return NULL;
 }
 
 void planTrip(Graph *graph)
 {
-	vector<User*> aux = choosePassangers();
+	vector<User*> aux;
+	if( !choosePassangers(aux)) {
+		cout << "No requests pending!\n";
+		return;
+	}
 
 	loadMap(graph, city);
 
