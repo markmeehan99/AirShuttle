@@ -2,12 +2,13 @@
 #include "graphviewer.h"
 #include <fstream>
 #include <iostream>
-#include <algorithm>    // std::sort
+#include <algorithm> // std::sort
 #include <sstream>
 #include "Graph.h"
 #include "user.h"
 #include <map>
 #include <cmath>
+#include "Van.h"
 
 #define PORTO_NODES "T06_nodes_X_Y_Porto.txt"
 #define MAIA_NODES "T06_nodes_X_Y_Maia.txt"
@@ -19,7 +20,7 @@
 map<string, int> hotels;
 string city = "Porto";
 vector<int> paintGreen;
-vector<User*> usersRequested;
+vector<User *> usersRequested;
 
 struct struct_loaded
 {
@@ -173,7 +174,6 @@ void requestTrip()
 	cout << "What time would you like to leave the airport? [HH MM]\n";
 	cin >> hour >> minutes;
 
-
 	usersRequested.push_back(new User(0, hour, minutes, hotelId));
 }
 
@@ -303,7 +303,6 @@ void displayMap(Graph *graph)
 		}
 	}
 
-
 	cout << "paintGreen size: " << paintGreen.size() << endl;
 
 	int counter = 0;
@@ -322,54 +321,64 @@ void displayMap(Graph *graph)
 		graph->gv->setVertexLabel(h.second, h.first);
 		graph->gv->rearrange();
 	}
-
 }
 
-bool func(User *u1, User *u2) {
+bool func(User *u1, User *u2)
+{
 	return ((*u1) < (*u2));
 }
 
-bool choosePassangers(vector<User*> &users) {
-	int capacity = 2;
+bool choosePassangers(Van &van)//vector<User *> &users)
+{
+	//int capacity = 2;
 
-	if(usersRequested.empty()) return false;
+	if (usersRequested.empty())
+		return false;
 
 	sort(usersRequested.begin(), usersRequested.end(), func);
-	for (int i=0; i < usersRequested.size(); i++) {
-		if (i <= capacity)
-			users.push_back(usersRequested.at(i));
-		else break;
+	for (int i = 0; i < usersRequested.size(); i++)
+	{
+		if (i <= van.getMaxCapacity())
+			van.users.push_back(usersRequested.at(i));
+		else
+			break;
 	}
 
-	for(int i = 0; i < capacity; i++) {
+	for (int i = 0; i < van.getMaxCapacity(); i++)
+	{
 		if (i <= usersRequested.size())
 			usersRequested.erase(usersRequested.begin());
-		else break;
+		else
+			break;
 	}
 
 	return true;
 }
 
-User* findUser(int id, vector<User*> v) {
-	for(auto u: v) {
-		if(u->getHotelId() == id)
+User *findUser(int id, vector<User *> v)
+{
+	for (auto u : v)
+	{
+		if (u->getHotelId() == id)
 			return u;
 	}
 	cout << "nulo\n";
 	return NULL;
 }
 
-void planTrip(Graph *graph)
+void planTrip(Graph *graph, Van &van)
 {
 
 
-	vector<User*> aux;
-	if( !choosePassangers(aux)) {
+	//vector<User *> aux;
+	if (!choosePassangers(van))
+	{
 		cout << "No requests pending!\n";
 		return;
 	}
 
-	if (!loaded.mapPorto) loadMap(graph, city);
+	if (!loaded.mapPorto)
+		loadMap(graph, city);
 	cout << "cenas\n";
 
 	Vertex *airport = graph->findVertex(299611392);
@@ -381,25 +390,21 @@ void planTrip(Graph *graph)
 
 	paintGreen = {};
 
-	vector<double> distances;
-
 	// first source is airport
 	int src = airport->getInfo();
 
-
-	while (!aux.empty())
+	while (!van.users.empty())
 	{
 		// first "found" destination has a distance of infinite
 		// int is the id, double is the distance
 		pair<int, double> auxDest = make_pair(0, INF);
 
-		for (auto h : aux)
+		for (auto h : van.users)
 		{
 			cout << "ready to calculate\n";
 			Vertex *dest = graph->findVertex(h->getHotelId());
 			//calculates dijkstra from src to h (one of the requests)
 			graph->dijkstraShortestPath(src, dest->getInfo());
-			distances.push_back(dest->getDist());
 			cout << "Calculated path to hotel " << h->getHotelId() << endl;
 			if (dest->getDist() < auxDest.second)
 				auxDest = make_pair(dest->getInfo(), dest->getDist());
@@ -410,7 +415,7 @@ void planTrip(Graph *graph)
 		paintGreen.insert(paintGreen.end(), path.begin(), path.end());
 
 		// removing the destination found from the vector
-		aux.erase(find(aux.begin(), aux.end(), findUser(auxDest.first, aux)));
+		van.users.erase(find(van.users.begin(), van.users.end(), findUser(auxDest.first, van.users)));
 
 		// updating next src with this iterations' dest
 		src = auxDest.first;
@@ -457,7 +462,9 @@ int main()
 {
 
 	Graph *graph = new Graph();
-
+	Van van(0, 2);
+	loadHotels();
+	loadMap(graph, city);
 	bool quit = false;
 
 	while (!quit)
@@ -465,8 +472,7 @@ int main()
 		switch (menu())
 		{
 		case 1:
-			loadHotels();
-			loadMap(graph, city);
+
 			displayMap(graph);
 			break;
 		case 2:
@@ -479,7 +485,7 @@ int main()
 			displayRequests();
 			break;
 		case 5:
-			planTrip(graph);
+			planTrip(graph, van);
 			break;
 		case 6:
 			quit = true;

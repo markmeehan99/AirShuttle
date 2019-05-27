@@ -7,10 +7,9 @@ private:
     int id;
     int maxCapacity;
     int currentLoad;
-    //vector<vector<Vertex*> > paths;
-    std::queue<User*> users;
 
 public:
+    std::vector<User*> users;
     Van(int id, int cap=10);
     int getId();
     int getCurrentLoad();

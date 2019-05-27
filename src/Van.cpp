@@ -37,12 +37,12 @@ bool Van::isVanEmpty()
 }
 
 void Van::pushUser(User *user) {
-    users.push(user);
+    //users.push_back(user);
     this->increaseLoad();
 }
 
 void Van::popUser() {
-    users.pop();
+    //users.pop();
     this->decreaseLoad();
 }
 
