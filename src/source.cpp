@@ -36,8 +36,6 @@ enum cityOptions
 	MAIA
 };
 
-vector<int> requests;
-
 void displayRequests()
 {
 	for (auto r : usersRequested)
@@ -207,7 +205,7 @@ void loadMap(Graph *graph, string city)
 	double x, y;
 	char garbageChar;
 
-	getline(file, line); //Gets number os nodes, discards it
+	getline(file, line); //Gets number of nodes, discards it
 
 	int startingX, startingY;
 
@@ -289,24 +287,22 @@ void displayMap(Graph *graph)
 {
 	int edgeCounter = 0;
 
+	// reseting the vertices in the gv
 	for (auto v : graph->getVertexSet())
 	{
 		graph->gv->addNode(v->getInfo(), v->getX(), v->getY());
-		graph->gv->setVertexLabel(v->getInfo(), ".");
-		//gv->rearrange();
+		graph->gv->setVertexLabel(v->getInfo(), "");
+		graph->gv->setVertexColor(v->getInfo(), "YELLOW");
 
 		for (auto e : v->getAdj())
 		{
 			graph->gv->addEdge(edgeCounter, v->getInfo(), e.getDest()->getInfo(), 0);
 			edgeCounter++;
-			//cout << "Added edge " << edgeCounter << endl;
 		}
 	}
 
-	cout << "paintGreen size: " << paintGreen.size() << endl;
-
+	// paint the found path green
 	int counter = 0;
-
 	for (auto cenas : paintGreen)
 	{
 		graph->gv->setVertexColor(cenas, "GREEN");
@@ -315,6 +311,7 @@ void displayMap(Graph *graph)
 		counter++;
 	}
 
+	// paint hotels RED
 	for (auto h : hotels)
 	{
 		graph->gv->setVertexColor(h.second, "RED");
@@ -328,25 +325,54 @@ bool func(User *u1, User *u2)
 	return ((*u1) < (*u2));
 }
 
-bool choosePassangers(Van &van)//vector<User *> &users)
-{
-	//int capacity = 2;
+int countDiffMinutes(User u1, User u2) {
+	// if same hour, subtract the raw minutes
+	if(u1.getTime().hour == u2.getTime().hour) 
+		return u2.getTime().minutes - u1.getTime().minutes;
+	// if one hour of difference, subtract with "fix"
+	else if((u1.getTime().hour +1) == u2.getTime().hour) 
+		return u2.getTime().minutes - u1.getTime().minutes + 60;
+	// if more than one hour, it is too much time
+	else 
+		return 31;
+}
 
+bool choiceFactor(Van v, User u)
+{
+	if (v.users.size() > 0 && v.users.size() < v.getMaxCapacity())
+	{
+		// checks if first user waiting needs to wait for more than 30minutes with this new user
+		if (countDiffMinutes(*(v.users[0]), u) > 30) {
+			cout << "false\n";
+			return false;
+		}
+		cout << "true\n";
+	}
+	return v.users.size() < v.getMaxCapacity();
+}
+
+bool choosePassangers(Van &van) //vector<User *> &users)
+{
+	// if empty, no user to be requested
 	if (usersRequested.empty())
 		return false;
 
+	// sorting by arrival time
 	sort(usersRequested.begin(), usersRequested.end(), func);
+	// iterates through the usersRequested to check if waiting time limits are met
 	for (int i = 0; i < usersRequested.size(); i++)
 	{
-		if (i <= van.getMaxCapacity())
+		// choiceFactor decides whether it can be added or not
+		if (choiceFactor(van, *usersRequested[i]))
 			van.users.push_back(usersRequested.at(i));
+		// if not, no other will be added, and we can terminate this for
 		else
 			break;
 	}
-
-	for (int i = 0; i < van.getMaxCapacity(); i++)
+	// erasing the requests that the van is taking care
+	for (int i = 0; i < van.users.size(); i++)
 	{
-		if (i <= usersRequested.size())
+		if (i < usersRequested.size())
 			usersRequested.erase(usersRequested.begin());
 		else
 			break;
@@ -362,25 +388,24 @@ User *findUser(int id, vector<User *> v)
 		if (u->getHotelId() == id)
 			return u;
 	}
-	cout << "nulo\n";
 	return NULL;
 }
 
 void planTrip(Graph *graph, Van &van)
 {
-
-
-	//vector<User *> aux;
+	// if false, usersRequested vector is empty
+	// if true, this put users in van
 	if (!choosePassangers(van))
 	{
 		cout << "No requests pending!\n";
 		return;
 	}
 
+	// checking that the map is loaded
 	if (!loaded.mapPorto)
 		loadMap(graph, city);
-	cout << "cenas\n";
 
+	// defining airport vertex
 	Vertex *airport = graph->findVertex(299611392);
 	if (airport == NULL)
 	{
@@ -388,6 +413,7 @@ void planTrip(Graph *graph, Van &van)
 		return;
 	}
 
+	// initializing vector with vertices to paint green
 	paintGreen = {};
 
 	// first source is airport
@@ -401,11 +427,12 @@ void planTrip(Graph *graph, Van &van)
 
 		for (auto h : van.users)
 		{
-			cout << "ready to calculate\n";
+			//cout << "ready to calculate\n";
 			Vertex *dest = graph->findVertex(h->getHotelId());
 			//calculates dijkstra from src to h (one of the requests)
 			graph->dijkstraShortestPath(src, dest->getInfo());
-			cout << "Calculated path to hotel " << h->getHotelId() << endl;
+			//cout << "Calculated path to hotel " << h->getHotelId() << endl;
+			// to see if the distance is smaller than the previous nearest
 			if (dest->getDist() < auxDest.second)
 				auxDest = make_pair(dest->getInfo(), dest->getDist());
 		}
@@ -421,7 +448,7 @@ void planTrip(Graph *graph, Van &van)
 		src = auxDest.first;
 	}
 
-	// the last path calculation, so the van can return
+	// the last path calculation, so the van can return to airport
 	graph->dijkstraShortestPath(src, airport->getInfo());
 	vector<int> path = graph->getPath(src, airport->getInfo());
 	paintGreen.insert(paintGreen.end(), path.begin(), path.end());
@@ -462,7 +489,7 @@ int main()
 {
 
 	Graph *graph = new Graph();
-	Van van(0, 2);
+	Van van(0, 3);
 	loadHotels();
 	loadMap(graph, city);
 	bool quit = false;
