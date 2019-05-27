@@ -287,7 +287,6 @@ void loadMap(Graph *graph, string city)
 
 void displayMap(Graph *graph)
 {
-
 	int edgeCounter = 0;
 
 	for (auto v : graph->getVertexSet())
@@ -304,6 +303,19 @@ void displayMap(Graph *graph)
 		}
 	}
 
+
+	cout << "paintGreen size: " << paintGreen.size() << endl;
+
+	int counter = 0;
+
+	for (auto cenas : paintGreen)
+	{
+		graph->gv->setVertexColor(cenas, "GREEN");
+		graph->gv->setVertexLabel(cenas, to_string(counter));
+		graph->gv->rearrange();
+		counter++;
+	}
+
 	for (auto h : hotels)
 	{
 		graph->gv->setVertexColor(h.second, "RED");
@@ -311,24 +323,6 @@ void displayMap(Graph *graph)
 		graph->gv->rearrange();
 	}
 
-	cout << "paintGreen size: " << paintGreen.size() << endl;
-
-	for (auto cenas : paintGreen)
-	{
-		graph->gv->setVertexColor(cenas, "GREEN");
-		graph->gv->rearrange();
-	}
-
-	//Calcular shortestPath entre Ibis e StarInn
-
-	//graph->dijkstraShortestPath(474789325, 111447974);
-	//vector<int> path = graph->getPath(474789325, 111447974);
-	/*
-	for (auto v: path) {
-		graph->gv->setVertexColor(v, "GREEN");
-	}
-*/
-	//gv->rearrange();
 }
 
 bool func(User *u1, User *u2) {
@@ -341,12 +335,16 @@ bool choosePassangers(vector<User*> &users) {
 	if(usersRequested.empty()) return false;
 
 	sort(usersRequested.begin(), usersRequested.end(), func);
-	for (int i=0; i < capacity; i++) {
-		users.push_back(usersRequested.at(i));
+	for (int i=0; i < usersRequested.size(); i++) {
+		if (i <= capacity)
+			users.push_back(usersRequested.at(i));
+		else break;
 	}
 
 	for(int i = 0; i < capacity; i++) {
-		usersRequested.erase(usersRequested.begin());
+		if (i <= usersRequested.size())
+			usersRequested.erase(usersRequested.begin());
+		else break;
 	}
 
 	return true;
@@ -363,13 +361,16 @@ User* findUser(int id, vector<User*> v) {
 
 void planTrip(Graph *graph)
 {
+
+
 	vector<User*> aux;
 	if( !choosePassangers(aux)) {
 		cout << "No requests pending!\n";
 		return;
 	}
 
-	loadMap(graph, city);
+	if (!loaded.mapPorto) loadMap(graph, city);
+	cout << "cenas\n";
 
 	Vertex *airport = graph->findVertex(299611392);
 	if (airport == NULL)
@@ -384,6 +385,7 @@ void planTrip(Graph *graph)
 
 	// first source is airport
 	int src = airport->getInfo();
+
 
 	while (!aux.empty())
 	{
@@ -417,8 +419,7 @@ void planTrip(Graph *graph)
 	// the last path calculation, so the van can return
 	graph->dijkstraShortestPath(src, airport->getInfo());
 	vector<int> path = graph->getPath(src, airport->getInfo());
-	paintGreen.insert(paintGreen.begin(), path.begin(), path.end());
-
+	paintGreen.insert(paintGreen.end(), path.begin(), path.end());
 
 	displayMap(graph);
 }
