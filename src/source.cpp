@@ -1,4 +1,5 @@
 #include <cstdio>
+#include <chrono>
 #include "graphviewer.h"
 #include <fstream>
 #include <iostream>
@@ -419,6 +420,7 @@ void planTrip(Graph *graph, Van &van)
 	// first source is airport
 	int src = airport->getInfo();
 
+	auto start = std::chrono::high_resolution_clock::now();
 	while (!van.users.empty())
 	{
 		// first "found" destination has a distance of infinite
@@ -452,6 +454,11 @@ void planTrip(Graph *graph, Van &van)
 	graph->dijkstraShortestPath(src, airport->getInfo());
 	vector<int> path = graph->getPath(src, airport->getInfo());
 	paintGreen.insert(paintGreen.end(), path.begin(), path.end());
+
+	
+	auto finish = std::chrono::high_resolution_clock::now();
+	auto mili = chrono::duration_cast<chrono::milliseconds>(finish - start).count();
+	cout << "nearest neighbor time: " << mili << " ms" << endl;
 
 	displayMap(graph);
 }

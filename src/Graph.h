@@ -132,6 +132,7 @@ bool Graph::relax(Vertex *v, Vertex *w, double weight) {
 
 void Graph::dijkstraShortestPath(int origin, int dest) {
 
+	auto start = std::chrono::high_resolution_clock::now();
 	auto startNode = initSingleSource(origin);
 	auto endNode = findVertex(dest);
 
@@ -159,6 +160,9 @@ void Graph::dijkstraShortestPath(int origin, int dest) {
 			}
 		}
 	}
+	auto finish = std::chrono::high_resolution_clock::now();
+	auto mili = chrono::duration_cast<chrono::milliseconds>(finish - start).count();
+	cout << "dijkstra time: " << mili << " ms" << endl;
 }
 
 
