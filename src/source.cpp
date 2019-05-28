@@ -373,10 +373,10 @@ bool choosePassangers(Van &van) //vector<User *> &users)
 	// erasing the requests that the van is taking care
 	for (int i = 0; i < van.users.size(); i++)
 	{
-		if (i < usersRequested.size())
+		//if (i < usersRequested.size())
 			usersRequested.erase(usersRequested.begin());
-		else
-			break;
+		//else
+			//break;
 	}
 
 	return true;
@@ -496,7 +496,7 @@ int main()
 {
 
 	Graph *graph = new Graph();
-	Van van(0, 3);
+	Van van(0, 10);
 	loadHotels();
 	loadMap(graph, city);
 	bool quit = false;
